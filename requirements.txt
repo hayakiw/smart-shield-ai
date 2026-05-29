@@ -1,0 +1,8 @@
+pyyaml>=6.0
+watchdog>=4.0.0
+
+# AI 解析バックエンド: 使う方だけインストールすればよい (両方入れても OK)
+# Anthropic Claude を使う場合
+anthropic>=0.40.0
+# Google Gemini を使う場合 (Claude のみで動かすなら下記をコメントアウトしてよい)
+google-genai>=0.3.0

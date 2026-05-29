@@ -1,0 +1,25 @@
+[project]
+name = "smart-shield"
+version = "0.1.0"
+description = "Rule-based and AI-assisted IP banning daemon driven by log monitoring"
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+    "watchdog>=4.0.0",
+]
+
+# AI バックエンドは optional: pip install '.[anthropic]' または '.[gemini]' または '.[all-ai]'
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.40.0"]
+gemini    = ["google-genai>=0.3.0"]
+all-ai    = ["anthropic>=0.40.0", "google-genai>=0.3.0"]
+
+[project.scripts]
+smart-shield = "shield.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["shield*"]

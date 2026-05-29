@@ -1,0 +1,6 @@
+[Thu May 28 11:02:01.123456 2026] [auth_basic:error] [pid 12345] [client 203.0.113.55:54321] AH01617: user admin: authentication failure for "/protected": Password Mismatch
+[Thu May 28 11:02:03.234567 2026] [auth_basic:error] [pid 12345] [client 203.0.113.55:54322] AH01617: user root: authentication failure for "/protected": Password Mismatch
+[Thu May 28 11:02:05.345678 2026] [auth_basic:error] [pid 12345] [client 203.0.113.55:54323] AH01617: user oracle: authentication failure for "/protected": Password Mismatch
+[Thu May 28 11:02:07.456789 2026] [authz_core:error] [pid 12346] [client 203.0.113.55:54324] AH01630: client denied by server configuration: /var/www/html/private
+[Thu May 28 11:02:09.567890 2026] [cgi:error] [pid 12347] [client 203.0.113.55:54325] AH01215: script not found or unable to stat: /var/www/cgi-bin/.%2e/etc/passwd
+[Thu May 28 11:02:11.678901 2026] [:error] [pid 12348] [client 203.0.113.55] ModSecurity: Access denied with code 403. Matched signature "OWASP_CRS/WEB_ATTACK/SQL_INJECTION" [client "203.0.113.55"] [uri "/login"]

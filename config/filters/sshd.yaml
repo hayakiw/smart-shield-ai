@@ -1,0 +1,10 @@
+name: sshd
+description: OpenSSH 認証失敗の検出
+patterns:
+  - 'Failed password for .* from (?P<ip>\S+) port \d+'
+  - 'Failed publickey for .* from (?P<ip>\S+) port \d+'
+  - 'Invalid user .* from (?P<ip>\S+)'
+  - 'Connection closed by authenticating user .* (?P<ip>\S+) port \d+ \[preauth\]'
+  - 'message repeated \d+ times: \[ Failed password for .* from (?P<ip>\S+) port \d+'
+ignore:
+  - 'Accepted password for .* from .* port'

@@ -1,0 +1,81 @@
+global:
+  state_db: ./var/shield.sqlite3
+  log_level: INFO
+  dry_run: true            # true なら実コマンドは打たず DB と shield log だけ更新
+  default_ban_seconds: 600
+  whitelist:
+    - 127.0.0.1
+    - ::1
+    - 10.0.0.0/8
+    - 192.168.0.0/16
+
+  # 再犯者の永久 ban (recidive):
+  # 「lookback_seconds 以内に max_bans 回以上 ban された IP」を次回 ban 時に永久 ban に昇格
+  recidive:
+    enabled: true
+    lookback_seconds: 604800   # 7 日
+    max_bans: 3                # 3 回目の ban で永久化
+
+jails:
+  sshd:
+    enabled: true
+    filter: sshd
+    paths:
+      - C:/ProgramData/ssh/logs/sshd.log
+      - /var/log/auth.log
+    max_retries: 5
+    findtime_seconds: 600   # 10 分以内に
+    ban_seconds: 3600       # 1 時間 ban (0 を指定すると永久 ban)
+
+  nginx-auth:
+    enabled: true
+    filter: nginx-auth
+    paths:
+      - C:/nginx/logs/access.log
+      - /var/log/nginx/access.log
+    max_retries: 10
+    findtime_seconds: 300
+    ban_seconds: 1800
+
+  apache-auth:
+    enabled: true
+    filter: apache-auth
+    paths:
+      # access_log / error_log の両方を渡すと、フィルタが
+      # それぞれに合うパターンを当てて IP を抽出する。
+      - C:/Apache24/logs/access.log
+      - C:/Apache24/logs/error.log
+      - /var/log/apache2/access.log              # Debian/Ubuntu
+      - /var/log/apache2/error.log
+      - /var/log/apache2/other_vhosts_access.log
+      - /var/log/httpd/access_log                # RHEL/Rocky
+      - /var/log/httpd/error_log
+    max_retries: 10
+    findtime_seconds: 300
+    ban_seconds: 1800
+
+ai:
+  enabled: true
+  # provider: anthropic | gemini
+  #   anthropic → 環境変数 ANTHROPIC_API_KEY を使用
+  #   gemini    → 環境変数 GEMINI_API_KEY (or GOOGLE_API_KEY) を使用
+  provider: gemini
+  # model 未指定なら provider 別のデフォルト (claude-sonnet-4-6 / gemini-2.5-flash)
+  model: gemini-2.5-flash      # 安価モデル。精度重視なら gemini-2.5-pro
+  interval_seconds: 300        # 5 分ごと
+  lookback_seconds: 900        # 直近 15 分を解析
+  max_log_chars: 60000         # 1 回の解析で送る最大文字数
+  min_confidence: 0.75         # この信頼度以上のみ ban
+  ban_seconds: 7200            # AI 判定の ban 時間 (長め)。0 を指定すると永久 ban
+  # ログを集める対象 (jail と同じ paths を共有してもよい)
+  sources:
+    - C:/ProgramData/ssh/logs/sshd.log
+    - C:/nginx/logs/access.log
+    - C:/Apache24/logs/access.log
+    - C:/Apache24/logs/error.log
+    - /var/log/auth.log
+    - /var/log/nginx/access.log
+    - /var/log/apache2/access.log
+    - /var/log/apache2/error.log
+    - /var/log/httpd/access_log
+    - /var/log/httpd/error_log

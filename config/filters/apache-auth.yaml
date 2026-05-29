@@ -1,0 +1,34 @@
+name: apache-auth
+description: |
+  Apache HTTP Server の access_log / error_log を対象に
+  認証失敗・典型的なスキャナ・mod_security ブロックを検出する。
+patterns:
+  # --- access_log (Common / Combined Log Format) ---
+  # 401 Unauthorized
+  - '^(?P<ip>\S+) \S+ \S+ \[[^\]]+\] "(?:GET|POST|HEAD|PUT|DELETE) [^"]+" 401 '
+  # 403 Forbidden
+  - '^(?P<ip>\S+) \S+ \S+ \[[^\]]+\] "(?:GET|POST|HEAD|PUT|DELETE) [^"]+" 403 '
+  # 典型的な web shell / 設定漏洩 探索
+  - '^(?P<ip>\S+) \S+ \S+ \[[^\]]+\] "(?:GET|POST|HEAD) [^"]*(?:\.\./|/\.env|/wp-admin|/wp-login\.php|/phpmyadmin|/\.git/|/\.aws/|/server-status|/cgi-bin/\.\%|/manager/html|/HNAP1)[^"]*" '
+  # 異常に長いリクエストや過剰な引数 (CVE 偵察っぽいもの)
+  - '^(?P<ip>\S+) \S+ \S+ \[[^\]]+\] "(?:GET|POST) [^"]{500,}" '
+
+  # --- error_log (Apache 2.4 系) ---
+  # IP キャプチャは non-greedy + 末尾 hex 制約。
+  #  - non-greedy: `[client 2001:db8::1:54321]` の `:54321` を正しく port として
+  #    切り出す (greedy だと :54321 まで含めて valid IPv6 と誤マッチ)。
+  #  - 末尾 [0-9a-fA-F]: `2001:db8:` のようなコロン終端で early-stop して
+  #    is_valid_ip に False と判定されるのを防ぐ。
+  # mod_auth_basic / mod_authn_*: 認証失敗
+  - '\[client (?P<ip>[0-9a-fA-F:.]+?[0-9a-fA-F])(?::\d+)?\] (?:AH\d+: )?user \S+: authentication failure for'
+  # アクセス拒否 (Require が通らない / .htaccess)
+  - '\[client (?P<ip>[0-9a-fA-F:.]+?[0-9a-fA-F])(?::\d+)?\] (?:AH\d+: )?(?:client denied by server configuration|access to .* denied)'
+  # スクリプト存在せず (スキャナの典型)
+  - '\[client (?P<ip>[0-9a-fA-F:.]+?[0-9a-fA-F])(?::\d+)?\] (?:AH\d+: )?script not found or unable to stat: '
+  # mod_security ブロック (任意。導入していれば強い悪意シグナル)
+  # クォートで終端されているので greedy のままで一意。
+  - 'ModSecurity: (?:Warning|Access denied).* \[client "(?P<ip>[0-9a-fA-F:.]+)"\]'
+ignore:
+  # 同居している正規アクセスの 200/304 はそもそも上のパターンに当たらないが、
+  # 念のため authentication 成功ログがあれば除外しておく。
+  - 'authentication successful'

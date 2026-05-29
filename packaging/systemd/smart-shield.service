@@ -1,0 +1,42 @@
+[Unit]
+Description=Smart Shield - rule-based and AI-assisted log blocker
+Documentation=https://github.com/your-org/smart-shield
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 専用ユーザでの動作を推奨 (iptables を叩くので root か CAP_NET_ADMIN が必要)
+User=root
+Group=root
+
+WorkingDirectory=/opt/smart-shield
+Environment="PYTHONUNBUFFERED=1"
+# AI 機能を使う場合は EnvironmentFile で API キーを注入
+EnvironmentFile=-/etc/smart-shield/env
+
+ExecStart=/opt/smart-shield/.venv/bin/python -m shield -c /etc/smart-shield/shield.yaml run
+
+Restart=on-failure
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=5
+
+# シグナルで graceful shutdown
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=15
+
+# ログは stdout/stderr → journald
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=smart-shield
+
+# セキュリティ強化 (iptables を使うので NoNewPrivileges は外す)
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/smart-shield /var/log/smart-shield
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,7 @@
+name: nginx-auth
+description: Nginx 401/403 連発と典型的なスキャナ検出
+patterns:
+  - '^(?P<ip>\S+) \S+ \S+ \[[^\]]+\] "(?:GET|POST|HEAD) [^"]+" 401 '
+  - '^(?P<ip>\S+) \S+ \S+ \[[^\]]+\] "(?:GET|POST|HEAD) [^"]+" 403 '
+  - '^(?P<ip>\S+) \S+ \S+ \[[^\]]+\] "(?:GET|POST|HEAD) [^"]*(?:\.\./|/\.env|/wp-admin|/phpmyadmin|/.git/)[^"]*" '
+ignore: []
